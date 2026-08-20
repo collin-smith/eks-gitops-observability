@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  app:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - id: check
+        run: echo "has_app=$(test -f app/requirements.txt && echo true || echo false)" >> "$GITHUB_OUTPUT"
+      - if: steps.check.outputs.has_app == 'true'
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - if: steps.check.outputs.has_app == 'true'
+        run: pip install -r app/requirements.txt
+      - if: steps.check.outputs.has_app == 'true'
+        run: pytest app
+        working-directory: .
+
+  terraform:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - id: check
+        run: echo "has_tf=$(find terraform -name '*.tf' 2>/dev/null | grep -q . && echo true || echo false)" >> "$GITHUB_OUTPUT"
+      - if: steps.check.outputs.has_tf == 'true'
+        uses: hashicorp/setup-terraform@v3
+      - if: steps.check.outputs.has_tf == 'true'
+        run: terraform fmt -check -recursive terraform
+      - if: steps.check.outputs.has_tf == 'true'
+        run: terraform -chdir=terraform/envs/dev init -backend=false
+      - if: steps.check.outputs.has_tf == 'true'
+        run: terraform -chdir=terraform/envs/dev validate
+
+  helm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - id: check
+        run: echo "has_charts=$(find helm -name 'Chart.yaml' 2>/dev/null | grep -q . && echo true || echo false)" >> "$GITHUB_OUTPUT"
+      - if: steps.check.outputs.has_charts == 'true'
+        uses: azure/setup-helm@v4
+      - if: steps.check.outputs.has_charts == 'true'
+        run: |
+          for chart in $(find helm -name 'Chart.yaml' -exec dirname {} \;); do
+            helm lint "$chart"
+          done

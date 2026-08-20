@@ -1,0 +1,33 @@
+# Terraform
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+*.tfplan
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Helm
+**/charts/*.tgz
+**/Chart.lock
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+
+# Env / secrets
+.env
+*.pem

@@ -9,8 +9,9 @@ variable "cluster_name" {
 }
 
 variable "cluster_version" {
-  type    = string
-  default = "1.30"
+  description = "See module.eks's cluster_version — this default goes stale as EKS versions age out of support; check `aws eks describe-cluster-versions` before applying."
+  type        = string
+  default     = "1.34"
 }
 
 variable "vpc_cidr" {
@@ -46,8 +47,9 @@ variable "public_access_cidrs" {
 }
 
 variable "node_instance_types" {
-  type    = list(string)
-  default = ["t3.medium"]
+  description = "New AWS accounts may be restricted to free-tier-eligible types only — see module.eks's node_instance_types for how to check."
+  type        = list(string)
+  default     = ["t3.small"]
 }
 
 variable "node_desired_size" {

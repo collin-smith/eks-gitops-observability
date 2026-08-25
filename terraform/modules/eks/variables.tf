@@ -3,9 +3,9 @@ variable "cluster_name" {
 }
 
 variable "cluster_version" {
-  description = "Kubernetes version for the EKS control plane"
+  description = "Kubernetes version for the EKS control plane. EKS stops publishing managed-node-group AMIs once a version ages out of support, so this default will itself go stale over time — before applying, check what's currently STANDARD_SUPPORT with `aws eks describe-cluster-versions --query \"clusterVersions[?versionStatus=='STANDARD_SUPPORT'].clusterVersion\"` and override via tfvars if this default no longer appears in that list."
   type        = string
-  default     = "1.30"
+  default     = "1.34"
 }
 
 variable "vpc_id" {
@@ -35,8 +35,9 @@ variable "public_access_cidrs" {
 }
 
 variable "node_instance_types" {
-  type    = list(string)
-  default = ["t3.medium"]
+  description = "New AWS accounts are often restricted to free-tier-eligible instance types only (an anti-fraud guardrail, not a hard account limit) — if CreateNodegroup fails with 'not eligible for Free Tier', run `aws ec2 describe-instance-types --filters Name=free-tier-eligible,Values=true` and override this via tfvars with whatever it returns."
+  type        = list(string)
+  default     = ["t3.small"]
 }
 
 variable "node_desired_size" {

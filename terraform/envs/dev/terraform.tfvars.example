@@ -1,0 +1,8 @@
+# Copy to terraform.tfvars and adjust before `terraform apply`.
+
+aws_region = "us-east-1"
+
+# Restrict this to your own IP before applying, e.g. ["203.0.113.4/32"].
+# Left wide open by default so the portfolio README's copy-paste steps work
+# without editing anything first — tighten this for anything beyond a demo.
+public_access_cidrs = ["0.0.0.0/0"]

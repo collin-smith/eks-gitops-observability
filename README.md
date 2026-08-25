@@ -78,5 +78,3 @@ Flagged for later stages, not blocking now:
 - **Teardown/rebuild automation**: `make up` / `make down` to script the full
   stack lifecycle. Worth timing once it exists ("full stack from git in N
   minutes") as article material.
-- **NAT/private-subnet redesign**: current VPC design is deferred until the
-  architecture needs to look production-shaped for the writeup.

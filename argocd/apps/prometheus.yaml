@@ -15,6 +15,12 @@ spec:
         # stage's article maps to one clear addition.
         grafana:
           enabled: false
+        # t3.small's ~11-pod-per-node ceiling (an EKS/ENI limit, not a
+        # resource one) means a DaemonSet doesn't reliably fit across every
+        # node without either a bigger instance type or real overprovisioned
+        # headroom -- not worth chasing for a demo cluster. See 05-prometheus.md.
+        nodeExporter:
+          enabled: false
         alertmanager:
           alertmanagerSpec:
             resources:
@@ -56,3 +62,7 @@ spec:
       selfHeal: true
     syncOptions:
       - CreateNamespace=true
+      # kube-prometheus-stack's CRDs (Prometheus, Alertmanager, ...) exceed
+      # kubectl's 262144-byte last-applied-configuration annotation limit --
+      # client-side apply (ArgoCD's default) rejects them outright.
+      - ServerSideApply=true

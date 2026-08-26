@@ -1,0 +1,29 @@
+replicaCount: 1
+
+image:
+  # Set via --set image.repository=<ecr_repository_url> (from `terraform output ecr_repository_url`)
+  repository: ""
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8000
+
+# DATABASE_URL for the app. In this project it's a plain Secret value passed
+# via --set or a values override -- a documented simplification. Production
+# would use Sealed Secrets, External Secrets, or SOPS instead.
+database:
+  url: ""
+
+probes:
+  path: /health
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 250m
+    memory: 256Mi

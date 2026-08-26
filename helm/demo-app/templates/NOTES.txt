@@ -1,0 +1,6 @@
+Demo app deployed as {{ include "demo-app.fullname" . }}.
+
+Port-forward to try it locally:
+  kubectl port-forward svc/{{ include "demo-app.fullname" . }} 8000:{{ .Values.service.port }}
+  curl localhost:8000/health
+  curl localhost:8000/items

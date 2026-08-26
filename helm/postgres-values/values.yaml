@@ -1,0 +1,44 @@
+# Values overlay for the Bitnami postgresql chart. Install with:
+#   helm install pg oci://registry-1.docker.io/bitnamicharts/postgresql \
+#     --version 16.7.0 -f helm/postgres-values/values.yaml \
+#     --set auth.password=<password>
+#
+# The resulting DATABASE_URL for the app (given release name "pg"):
+#   postgresql://demo:<password>@pg-postgresql:5432/demo
+#
+# The pinned --version and the bitnamilegacy image repo below are both
+# fallout from Broadcom's 2025-08-28 Bitnami catalog change, which removed
+# every versioned bitnami/* image from Docker Hub. See 03-helm.md,
+# "Why the Postgres install pins a version and a bitnamilegacy image".
+
+global:
+  security:
+    # Legacy images dropped the signature metadata the chart's hardened-image
+    # check now expects, so it has to be told to allow them.
+    allowInsecureImages: true
+
+image:
+  # Versioned bitnami/postgresql tags were pulled from Docker Hub 2025-08-28;
+  # the preserved copies live under the bitnamilegacy/ namespace.
+  repository: bitnamilegacy/postgresql
+
+auth:
+  username: demo
+  database: demo
+  # password intentionally left unset here -- pass with --set auth.password=<password>
+  # (or --set-string auth.existingSecret=<secret-name> for a real deployment)
+
+primary:
+  persistence:
+    enabled: true
+    size: 1Gi
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 250m
+      memory: 256Mi
+
+volumePermissions:
+  enabled: false

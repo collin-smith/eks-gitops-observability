@@ -53,8 +53,9 @@ variable "node_instance_types" {
 }
 
 variable "node_desired_size" {
-  type    = number
-  default = 2
+  description = "2 was fine through Stage 4, but t3.small's ~11-pod-per-node ENI limit means 2 nodes run out of pod slots once Stage 5's Prometheus stack lands on top of ArgoCD + the app + Postgres -- bumped to 3 (still within node_max_size) after hitting that live."
+  type        = number
+  default     = 3
 }
 
 variable "node_min_size" {

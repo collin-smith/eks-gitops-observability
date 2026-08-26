@@ -1,0 +1,44 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: postgres
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://charts.bitnami.com/bitnami
+    chart: postgresql
+    targetRevision: 18.8.13
+    helm:
+      # Mirrors helm/postgres-values/values.yaml. Inlined rather than
+      # referenced, since a single-source Application can't pull a values
+      # file from a different repo than its chart source -- that needs
+      # ArgoCD's multi-source Applications, which is more machinery than a
+      # portfolio-sized values overlay justifies.
+      values: |
+        auth:
+          username: demo
+          database: demo
+          password: password
+        primary:
+          persistence:
+            enabled: true
+            size: 1Gi
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi
+        volumePermissions:
+          enabled: false
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

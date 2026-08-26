@@ -1,0 +1,28 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: demo-app
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/collin-smith/eks-gitops-observability.git
+    targetRevision: main
+    path: helm/demo-app
+    helm:
+      parameters:
+        - name: image.repository
+          value: "<account-id>.dkr.ecr.us-east-1.amazonaws.com/eks-gitops-observability/demo-app"
+        - name: image.tag
+          value: "latest"
+        - name: database.url
+          value: "postgresql://demo:password@postgres-postgresql:5432/demo"
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

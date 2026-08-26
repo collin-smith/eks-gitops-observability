@@ -27,3 +27,10 @@ resources:
   limits:
     cpu: 250m
     memory: 256Mi
+
+# Off by default -- the ServiceMonitor CRD only exists once Stage 5's
+# Prometheus Operator is installed. Stage 5 turns this on via the
+# Application's helm parameters once that's true.
+serviceMonitor:
+  enabled: false
+  interval: 15s

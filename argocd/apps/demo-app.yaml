@@ -17,6 +17,8 @@ spec:
           value: "latest"
         - name: database.url
           value: "postgresql://demo:password@postgres-postgresql:5432/demo"
+        - name: serviceMonitor.enabled
+          value: "true"
   destination:
     server: https://kubernetes.default.svc
     namespace: default

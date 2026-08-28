@@ -1,0 +1,11 @@
+# Namespace the ConfigMaps land in. Must match where kube-prometheus-stack's
+# Grafana sidecar is watching -- by default that's Grafana's own namespace
+# (monitoring), the same one the Prometheus Application deploys into.
+namespace: monitoring
+
+# Label the Grafana sidecar filters on. kube-prometheus-stack's default is
+# `grafana_dashboard: "1"` -- change both sides together if you override it.
+sidecarLabel: grafana_dashboard
+
+# Grafana folder to file these dashboards under in the UI.
+folder: demo-app

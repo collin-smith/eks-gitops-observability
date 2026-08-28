@@ -11,10 +11,37 @@ spec:
     targetRevision: 88.5.4
     helm:
       values: |
-        # Grafana is Stage 6's topic -- kept out of this release so each
-        # stage's article maps to one clear addition.
+        # Stage 6 turns Grafana on. It ships inside kube-prometheus-stack --
+        # Stage 5 deliberately disabled it so that release mapped to one
+        # clear addition (Prometheus). Custom dashboards are provisioned
+        # separately via the grafana-dashboards chart (argocd/apps/grafana.yaml),
+        # which the sidecar below discovers from labelled ConfigMaps.
         grafana:
-          enabled: false
+          enabled: true
+          # kube-prometheus-stack's default admin password. A documented
+          # simplification, same class as the app's plain-Secret DB URL --
+          # production would source this from a real secret store.
+          adminPassword: prom-operator
+          defaultDashboardsEnabled: true
+          persistence:
+            enabled: false
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+          sidecar:
+            dashboards:
+              enabled: true
+              label: grafana_dashboard
+              # Honour the grafana_folder annotation the chart sets, so the
+              # demo-app dashboard lands in its own UI folder rather than
+              # "General".
+              folderAnnotation: grafana_folder
+              provider:
+                foldersFromFilesStructure: true
         # t3.small's ~11-pod-per-node ceiling (an EKS/ENI limit, not a
         # resource one) means a DaemonSet doesn't reliably fit across every
         # node without either a bigger instance type or real overprovisioned

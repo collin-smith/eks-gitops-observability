@@ -1,0 +1,22 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: grafana-dashboards
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/collin-smith/eks-gitops-observability.git
+    targetRevision: main
+    path: helm/grafana-dashboards
+  destination:
+    server: https://kubernetes.default.svc
+    # Same namespace kube-prometheus-stack's Grafana (and its dashboard
+    # sidecar) run in -- the sidecar only watches its own namespace by default.
+    namespace: monitoring
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

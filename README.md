@@ -46,9 +46,10 @@ terraform/envs/dev/                Terraform environment (dev)
 app/                                Demo app (Python/FastAPI): /health, /metrics, /docs
 helm/demo-app/                     Helm chart for the demo app
 helm/postgres-values/              Values overlay for a third-party Postgres chart
+helm/grafana-dashboards/           Chart packaging Grafana dashboards as ConfigMaps
 argocd/apps/                       ArgoCD Application manifests
 observability/prometheus/          ServiceMonitor + alert rules
-observability/grafana/             Dashboards (JSON) + provisioning
+observability/grafana/             Grafana notes (dashboards live in helm/grafana-dashboards/)
 ```
 
 ## Decisions

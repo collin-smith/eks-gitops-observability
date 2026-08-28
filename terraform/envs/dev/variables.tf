@@ -53,9 +53,9 @@ variable "node_instance_types" {
 }
 
 variable "node_desired_size" {
-  description = "2 was fine through Stage 4, but t3.small's ~11-pod-per-node ENI limit means 2 nodes run out of pod slots once Stage 5's Prometheus stack lands on top of ArgoCD + the app + Postgres -- bumped to 3 (still within node_max_size) after hitting that live."
+  description = "t3.small's ~11-pod-per-node ENI limit is the binding constraint, not CPU/memory. 2 ran out once Stage 5's Prometheus stack landed on ArgoCD + app + Postgres (bumped to 3 live); 3 filled up again at Stage 6 when Grafana + its two config sidecars landed -- all three nodes hit 11/11 and Grafana couldn't reschedule after an OOM. Bumped to 4."
   type        = number
-  default     = 3
+  default     = 4
 }
 
 variable "node_min_size" {
@@ -64,8 +64,9 @@ variable "node_min_size" {
 }
 
 variable "node_max_size" {
+  # Headroom for Stage 7's autoscaler experiments on top of the Stage 6 baseline.
   type    = number
-  default = 3
+  default = 6
 }
 
 variable "ecr_repository_name" {

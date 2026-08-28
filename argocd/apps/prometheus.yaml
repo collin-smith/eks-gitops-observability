@@ -28,13 +28,15 @@ spec:
           resources:
             requests:
               cpu: 100m
-              memory: 192Mi
+              memory: 256Mi
             limits:
-              # Grafana 13 + both config sidecars contend on SQLite at
-              # startup; a tight CPU limit throttles that badly and the
-              # liveness probe can kill the pod mid-boot. 500m gives it room.
+              # Grafana 13's startup (bleve search-index build) spikes well
+              # past 256Mi and gets OOMKilled; the tight CPU limit also
+              # throttled boot into a liveness-kill loop. The chart ships no
+              # limits at all by default -- these are generous but bounded,
+              # which matters on a capacity-tight t3.small node group.
               cpu: 500m
-              memory: 384Mi
+              memory: 512Mi
           sidecar:
             dashboards:
               enabled: true

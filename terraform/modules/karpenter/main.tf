@@ -371,17 +371,12 @@ resource "aws_iam_role_policy" "controller" {
 }
 
 # --------------------------------------------------------------------------
-# Discovery tags: the EC2NodeClass selects subnets and the security group by
-# this tag rather than by hardcoded IDs.
+# Discovery tag on the EKS-managed cluster security group, so the
+# EC2NodeClass selects it by tag rather than a hardcoded ID. (The matching
+# tag on the private subnets is set in the vpc module, alongside their other
+# kubernetes.io/* tags -- setting it there avoids an aws_ec2_tag vs
+# aws_subnet.tags reconciliation fight.)
 # --------------------------------------------------------------------------
-resource "aws_ec2_tag" "subnet_discovery" {
-  for_each = toset(var.discovery_subnet_ids)
-
-  resource_id = each.value
-  key         = "karpenter.sh/discovery"
-  value       = var.cluster_name
-}
-
 resource "aws_ec2_tag" "cluster_sg_discovery" {
   resource_id = var.cluster_security_group_id
   key         = "karpenter.sh/discovery"

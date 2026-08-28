@@ -11,8 +11,8 @@ spec:
   amiSelectorTerms:
     - alias: al2023@latest
 
-  # Both selectors match the karpenter.sh/discovery tag that
-  # terraform/modules/karpenter puts on the private subnets and the
+  # Both selectors match the karpenter.sh/discovery tag: the vpc module
+  # puts it on the private subnets, the karpenter module puts it on the
   # EKS-managed cluster security group.
   subnetSelectorTerms:
     - tags:

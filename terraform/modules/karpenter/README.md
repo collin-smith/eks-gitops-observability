@@ -15,9 +15,11 @@ this cluster. Karpenter itself (the controller and the `NodePool` /
 - **SQS interruption queue** + **EventBridge rules** — EC2 spot-interruption,
   rebalance, instance state-change and health events fan into the queue;
   Karpenter drains the affected node ahead of the 2-minute warning.
-- **`karpenter.sh/discovery` tags** on the private subnets and the
-  EKS-managed cluster security group, so the `EC2NodeClass` selects them by
-  tag instead of by hardcoded ID.
+- **`karpenter.sh/discovery` tag** on the EKS-managed cluster security
+  group, so the `EC2NodeClass` selects it by tag instead of a hardcoded ID.
+  (The matching tag on the private subnets is set in the `vpc` module,
+  next to their other `kubernetes.io/*` tags — putting it there avoids an
+  `aws_ec2_tag` vs `aws_subnet.tags` reconciliation fight.)
 
 ## What it deliberately does NOT create
 

@@ -22,11 +22,6 @@ variable "node_iam_role_name" {
   type        = string
 }
 
-variable "discovery_subnet_ids" {
-  description = "Subnets Karpenter may launch nodes into — tagged karpenter.sh/discovery=<cluster_name> so the EC2NodeClass subnetSelectorTerms can find them. Normally the private subnets."
-  type        = list(string)
-}
-
 variable "cluster_security_group_id" {
   description = "The EKS-managed cluster security group — tagged for discovery so Karpenter nodes attach it and can reach the API server / other nodes."
   type        = string

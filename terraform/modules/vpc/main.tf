@@ -47,6 +47,10 @@ resource "aws_subnet" "private" {
     Name                                        = "${var.name}-private-${var.azs[count.index]}"
     "kubernetes.io/cluster/${var.cluster_name}" = "shared"
     "kubernetes.io/role/internal-elb"           = "1"
+    # Karpenter's EC2NodeClass selects launch subnets by this tag. Set here
+    # (not via a separate aws_ec2_tag) so it doesn't fight this resource's
+    # own tag reconciliation.
+    "karpenter.sh/discovery" = var.cluster_name
   })
 }
 

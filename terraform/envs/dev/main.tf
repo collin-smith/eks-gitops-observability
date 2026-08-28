@@ -43,5 +43,4 @@ module "karpenter" {
   node_iam_role_arn         = module.eks.node_group_role_arn
   node_iam_role_name        = module.eks.node_group_role_name
   cluster_security_group_id = module.eks.cluster_security_group_id
-  discovery_subnet_ids      = module.vpc.private_subnet_ids
 }

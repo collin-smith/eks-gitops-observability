@@ -27,11 +27,14 @@ spec:
             enabled: false
           resources:
             requests:
-              cpu: 50m
-              memory: 128Mi
+              cpu: 100m
+              memory: 192Mi
             limits:
-              cpu: 200m
-              memory: 256Mi
+              # Grafana 13 + both config sidecars contend on SQLite at
+              # startup; a tight CPU limit throttles that badly and the
+              # liveness probe can kill the pod mid-boot. 500m gives it room.
+              cpu: 500m
+              memory: 384Mi
           sidecar:
             dashboards:
               enabled: true

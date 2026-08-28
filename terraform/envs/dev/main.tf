@@ -30,3 +30,18 @@ module "ecr" {
 
   repository_name = var.ecr_repository_name
 }
+
+# Stage 7: Karpenter node autoscaling. The managed node group stays as
+# baseline capacity (ArgoCD, kube-prometheus-stack, Karpenter itself);
+# Karpenter provisions extra nodes on demand for workload bursts.
+module "karpenter" {
+  source = "../../modules/karpenter"
+
+  cluster_name              = var.cluster_name
+  oidc_provider_arn         = module.eks.oidc_provider_arn
+  oidc_provider_url         = module.eks.oidc_provider_url
+  node_iam_role_arn         = module.eks.node_group_role_arn
+  node_iam_role_name        = module.eks.node_group_role_name
+  cluster_security_group_id = module.eks.cluster_security_group_id
+  discovery_subnet_ids      = module.vpc.private_subnet_ids
+}

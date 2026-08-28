@@ -25,3 +25,12 @@ output "oidc_provider_url" {
 output "node_group_role_arn" {
   value = aws_iam_role.node.arn
 }
+
+output "node_group_role_name" {
+  value = aws_iam_role.node.name
+}
+
+output "cluster_security_group_id" {
+  description = "The EKS-managed cluster security group — created automatically with the cluster, attached to control-plane ENIs and (via Karpenter's discovery tag) to Karpenter-launched nodes."
+  value       = aws_eks_cluster.this.vpc_config[0].cluster_security_group_id
+}

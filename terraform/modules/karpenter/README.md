@@ -38,6 +38,9 @@ this cluster. Karpenter itself (the controller and the `NodePool` /
 
 ## Version note
 
-The controller policy tracks Karpenter **v1.x**. If you pin a different
-chart version in `argocd/apps/karpenter.yaml`, diff this policy against that
-release's `cloudformation.yaml` before applying.
+The controller policy is transcribed from Karpenter **v1.14.1**'s
+`cloudformation.yaml` (matching the chart version pinned in
+`argocd/apps/karpenter.yaml`). If you bump that pin, diff this policy
+against the new release's `cloudformation.yaml` — statements get added
+between minor versions (v1.14 added `AllowUnscopedInstanceProfileListAction`
+and `AllowZonalShiftStatusReadOnly`, among others).

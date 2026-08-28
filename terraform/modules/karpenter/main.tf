@@ -141,10 +141,10 @@ resource "aws_iam_role" "controller" {
   tags = var.tags
 }
 
-# Mirrors the upstream Karpenter CloudFormation controller policy (v1.x).
-# Every mutating EC2 statement is tag-scoped to this cluster + a karpenter.sh
-# nodepool; read actions are region-locked. If you pin a different Karpenter
-# version, diff this against that release's cloudformation.yaml.
+# Transcribed from Karpenter v1.14.1's cloudformation.yaml (matches the
+# chart pin in argocd/apps/karpenter.yaml). Every mutating EC2 statement is
+# tag-scoped to this cluster + a karpenter.sh nodepool; reads are
+# region-locked. Diff against the release's cloudformation.yaml on any bump.
 resource "aws_iam_role_policy" "controller" {
   name = "KarpenterController"
   role = aws_iam_role.controller.id
@@ -161,6 +161,7 @@ resource "aws_iam_role_policy" "controller" {
           "arn:${local.partition}:ec2:${local.region}:*:security-group/*",
           "arn:${local.partition}:ec2:${local.region}:*:subnet/*",
           "arn:${local.partition}:ec2:${local.region}:*:capacity-reservation/*",
+          "arn:${local.partition}:ec2:${local.region}:*:placement-group/*",
         ]
         Action = ["ec2:RunInstances", "ec2:CreateFleet"]
       },
@@ -224,7 +225,7 @@ resource "aws_iam_role_policy" "controller" {
           StringEquals = { "aws:ResourceTag/${local.cluster_tag_key}" = "owned" }
           StringLike   = { "aws:ResourceTag/karpenter.sh/nodepool" = "*" }
           "ForAllValues:StringEquals" = {
-            "aws:TagKeys" = ["karpenter.sh/nodeclaim", "Name"]
+            "aws:TagKeys" = ["eks:eks-cluster-name", "karpenter.sh/nodeclaim", "Name"]
           }
         }
       },
@@ -247,11 +248,14 @@ resource "aws_iam_role_policy" "controller" {
         Resource = "*"
         Action = [
           "ec2:DescribeAvailabilityZones",
+          "ec2:DescribeCapacityReservations",
           "ec2:DescribeImages",
           "ec2:DescribeInstances",
+          "ec2:DescribeInstanceStatus",
           "ec2:DescribeInstanceTypeOfferings",
           "ec2:DescribeInstanceTypes",
           "ec2:DescribeLaunchTemplates",
+          "ec2:DescribePlacementGroups",
           "ec2:DescribeSecurityGroups",
           "ec2:DescribeSpotPriceHistory",
           "ec2:DescribeSubnets",
@@ -284,7 +288,7 @@ resource "aws_iam_role_policy" "controller" {
         Resource = var.node_iam_role_arn
         Action   = "iam:PassRole"
         Condition = {
-          StringEquals = { "iam:PassedToService" = "ec2.amazonaws.com" }
+          StringEquals = { "iam:PassedToService" = ["ec2.amazonaws.com", "ec2.amazonaws.com.cn"] }
         }
       },
       {
@@ -340,10 +344,27 @@ resource "aws_iam_role_policy" "controller" {
         Action   = "iam:GetInstanceProfile"
       },
       {
+        Sid      = "AllowUnscopedInstanceProfileListAction"
+        Effect   = "Allow"
+        Resource = "*"
+        Action   = "iam:ListInstanceProfiles"
+      },
+      {
         Sid      = "AllowAPIServerEndpointDiscovery"
         Effect   = "Allow"
         Resource = "arn:${local.partition}:eks:${local.region}:${local.account}:cluster/${var.cluster_name}"
         Action   = "eks:DescribeCluster"
+      },
+      {
+        Sid      = "AllowZonalShiftStatusReadOnly"
+        Effect   = "Allow"
+        Resource = "*"
+        Action   = "arc-zonal-shift:GetManagedResource"
+        Condition = {
+          StringEquals = {
+            "arc-zonal-shift:ResourceIdentifier" = "arn:${local.partition}:eks:${local.region}:${local.account}:cluster/${var.cluster_name}"
+          }
+        }
       },
     ]
   })

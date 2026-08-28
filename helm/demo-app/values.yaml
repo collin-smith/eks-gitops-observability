@@ -42,7 +42,9 @@ serviceMonitor:
 autoscaling:
   enabled: false
   minReplicas: 1
-  maxReplicas: 10
+  # High enough that a load test scales past what the baseline node group
+  # can hold -- the overflow pods go Pending and Karpenter provisions a node.
+  maxReplicas: 25
   metricName: http_requests_per_second
   # Scale so each pod handles ~5 req/s; a light load test pushes well past
   # this and triggers scale-out within a reconcile or two.

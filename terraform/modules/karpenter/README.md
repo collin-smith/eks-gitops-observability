@@ -28,6 +28,17 @@ this cluster. Karpenter itself (the controller and the `NodePool` /
   carries the worker + CNI + ECR policies. Karpenter v1 creates and manages
   the instance profile itself (the controller policy allows it).
 
+- **The EC2 Spot service-linked role.** `AWSServiceRoleForEC2Spot` is
+  account-global, not per-environment, so it's a prerequisite rather than a
+  module resource. On an account that has never launched a Spot instance,
+  Karpenter's first spot `CreateFleet` fails with
+  `AuthFailure.ServiceLinkedRoleCreationNotPermitted` and it silently falls
+  back to on-demand. Create it once per account:
+
+  ```
+  aws iam create-service-linked-role --aws-service-name spot.amazonaws.com
+  ```
+
 ## Wiring
 
 `terraform output` exposes what the ArgoCD Karpenter release needs:

@@ -1,0 +1,29 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: karpenter-nodepool
+  namespace: argocd
+  # Sync the NodePool/EC2NodeClass only after the karpenter app has
+  # installed their CRDs.
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/collin-smith/eks-gitops-observability.git
+    targetRevision: main
+    path: karpenter
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: kube-system
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    # The EC2NodeClass CRD may not exist on the very first sync; retry
+    # instead of failing the Application outright.
+    retry:
+      limit: 5
+      backoff:
+        duration: 15s
+        maxDuration: 2m

@@ -1,0 +1,27 @@
+apiVersion: karpenter.k8s.aws/v1
+kind: EC2NodeClass
+metadata:
+  name: default
+spec:
+  # Same IAM role the managed node group uses (worker + CNI + ECR policies).
+  # Karpenter creates and manages the instance profile for it.
+  role: eks-gitops-observability-dev-node
+
+  amiFamily: AL2023
+  amiSelectorTerms:
+    - alias: al2023@latest
+
+  # Both selectors match the karpenter.sh/discovery tag that
+  # terraform/modules/karpenter puts on the private subnets and the
+  # EKS-managed cluster security group.
+  subnetSelectorTerms:
+    - tags:
+        karpenter.sh/discovery: eks-gitops-observability-dev
+  securityGroupSelectorTerms:
+    - tags:
+        karpenter.sh/discovery: eks-gitops-observability-dev
+
+  tags:
+    # Marks nodes/instances Karpenter owns -- the controller policy is
+    # scoped to resources carrying this.
+    kubernetes.io/cluster/eks-gitops-observability-dev: owned

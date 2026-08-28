@@ -48,6 +48,7 @@ helm/demo-app/                     Helm chart for the demo app
 helm/postgres-values/              Values overlay for a third-party Postgres chart
 helm/grafana-dashboards/           Chart packaging Grafana dashboards as ConfigMaps
 argocd/apps/                       ArgoCD Application manifests
+karpenter/                         Karpenter NodePool + EC2NodeClass (synced by ArgoCD)
 observability/prometheus/          ServiceMonitor + alert rules
 observability/grafana/             Grafana notes (dashboards live in helm/grafana-dashboards/)
 ```

@@ -1,0 +1,56 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: prometheus-adapter
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://prometheus-community.github.io/helm-charts
+    chart: prometheus-adapter
+    # Verify with: helm show chart prometheus-community/prometheus-adapter
+    targetRevision: "4.11.0"
+    helm:
+      values: |
+        prometheus:
+          # The kube-prometheus-stack Prometheus from Stage 5.
+          url: http://prometheus-kube-prometheus-prometheus.monitoring.svc
+          port: 9090
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 200m
+            memory: 128Mi
+        rules:
+          # Drop the adapter's default CPU/memory resource-metric rules --
+          # metrics-server isn't installed and this stage only needs the one
+          # custom metric.
+          default: false
+          custom:
+            # Expose per-pod requests/sec as a custom metric the HPA can
+            # target. seriesQuery filters to series that carry the pod +
+            # namespace target labels kube-prometheus-stack adds; the
+            # overrides map those onto Kubernetes objects so the HPA can ask
+            # "how many req/s is each pod of this Deployment serving".
+            - seriesQuery: 'http_requests_total{namespace!="",pod!=""}'
+              resources:
+                overrides:
+                  namespace:
+                    resource: namespace
+                  pod:
+                    resource: pod
+              name:
+                matches: "^http_requests_total$"
+                as: "http_requests_per_second"
+              metricsQuery: 'sum(rate(<<.Series>>{<<.LabelMatchers>>}[2m])) by (<<.GroupBy>>)'
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

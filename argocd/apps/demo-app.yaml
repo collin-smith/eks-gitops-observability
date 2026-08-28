@@ -19,9 +19,22 @@ spec:
           value: "postgresql://demo:password@postgres-postgresql:5432/demo"
         - name: serviceMonitor.enabled
           value: "true"
+        - name: autoscaling.enabled
+          value: "true"
   destination:
     server: https://kubernetes.default.svc
     namespace: default
+  # Stage 7: with autoscaling on, the HPA writes spec.replicas on the
+  # Deployment. The chart no longer renders that field (see deployment.yaml),
+  # but ArgoCD would still flag the live value as drift and, with selfHeal,
+  # revert every scale-out. Telling it to ignore that one path hands
+  # ownership of replica count to the HPA.
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      name: demo-app-demo-app
+      jsonPointers:
+        - /spec/replicas
   syncPolicy:
     automated:
       prune: true

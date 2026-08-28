@@ -12,6 +12,7 @@ the Grafana dashboards (Stage 6), then Karpenter (Stage 7).
 | `grafana.yaml`            | `helm/grafana-dashboards` in this repo    | `monitoring` | 6     |
 | `karpenter.yaml`          | `public.ecr.aws/karpenter` OCI chart      | `kube-system`| 7     |
 | `karpenter-nodepool.yaml` | `karpenter/` in this repo (NodePool + EC2NodeClass) | `kube-system` | 7 |
+| `prometheus-adapter.yaml` | upstream `prometheus-adapter` chart       | `monitoring` | 7     |
 
 Grafana itself ships inside `kube-prometheus-stack` — `prometheus.yaml`
 enables it and its dashboard sidecar; `grafana.yaml` only adds the custom

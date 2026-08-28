@@ -5,7 +5,12 @@ metadata:
   labels:
     {{- include "demo-app.labels" . | nindent 4 }}
 spec:
+  {{- if not .Values.autoscaling.enabled }}
+  # When the HPA owns replica count, this field must be absent — otherwise
+  # Helm/ArgoCD and the HPA fight over it on every reconcile. See
+  # ignoreDifferences in argocd/apps/demo-app.yaml.
   replicas: {{ .Values.replicaCount }}
+  {{- end }}
   selector:
     matchLabels:
       {{- include "demo-app.selectorLabels" . | nindent 6 }}

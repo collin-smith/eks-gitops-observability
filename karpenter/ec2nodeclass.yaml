@@ -7,7 +7,8 @@ spec:
   # Karpenter creates and manages the instance profile for it.
   role: eks-gitops-observability-dev-node
 
-  amiFamily: AL2023
+  # The alias drives both the AMI and the family (AL2023) + bootstrap logic;
+  # in v1 you don't set amiFamily separately when using an alias.
   amiSelectorTerms:
     - alias: al2023@latest
 
@@ -21,7 +22,9 @@ spec:
     - tags:
         karpenter.sh/discovery: eks-gitops-observability-dev
 
+  # Karpenter tags everything it launches with
+  # kubernetes.io/cluster/<name>=owned and eks:eks-cluster-name automatically
+  # (and rejects those keys here). Extra custom tags would go under spec.tags.
   tags:
-    # Marks nodes/instances Karpenter owns -- the controller policy is
-    # scoped to resources carrying this.
-    kubernetes.io/cluster/eks-gitops-observability-dev: owned
+    project: eks-gitops-observability
+    stage: "7-autoscaling"

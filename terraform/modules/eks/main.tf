@@ -130,12 +130,52 @@ resource "aws_eks_addon" "ebs_csi_driver" {
   depends_on = [aws_eks_node_group.this]
 }
 
+# Custom launch template for the managed node group. The only reason it
+# exists is IMDS hop limit: EKS's default is 1, which stops any pod that
+# isn't on the host network from reaching 169.254.169.254 (the packet
+# crosses one hop from pod to node network namespace and the TTL is spent).
+# The AWS Load Balancer Controller (Stage 8) calls IMDS on startup to
+# discover its region and VPC; with hop limit 1 that call times out and the
+# controller crash-loops. Raising it to 2 is the documented fix.
+#
+# No image_id / instance_type here on purpose — leaving them unset lets the
+# managed node group keep supplying the EKS-optimized AMI, its bootstrap
+# userdata, and the instance type from node_instance_types.
+resource "aws_launch_template" "node" {
+  name_prefix = "${var.cluster_name}-node-"
+
+  metadata_options {
+    http_endpoint               = "enabled"
+    http_tokens                 = "required"
+    http_put_response_hop_limit = 2
+  }
+
+  tag_specifications {
+    resource_type = "instance"
+    tags          = merge(var.tags, { Name = "${var.cluster_name}-node" })
+  }
+
+  tags = var.tags
+
+  # No create_before_destroy: it would propagate to the node group (which
+  # references this template), and EKS refuses a second node group with the
+  # same name. Attaching a launch template to a node group that never had
+  # one is a replace either way — Terraform destroys the old node group,
+  # then creates the new one. Later hop-limit-style edits are just new
+  # template versions and roll in place.
+}
+
 resource "aws_eks_node_group" "this" {
   cluster_name    = aws_eks_cluster.this.name
   node_group_name = "${var.cluster_name}-default"
   node_role_arn   = aws_iam_role.node.arn
   subnet_ids      = var.private_subnet_ids
   instance_types  = var.node_instance_types
+
+  launch_template {
+    id      = aws_launch_template.node.id
+    version = aws_launch_template.node.latest_version
+  }
 
   scaling_config {
     desired_size = var.node_desired_size

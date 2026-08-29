@@ -16,8 +16,10 @@ spec:
     helm:
       values: |
         clusterName: eks-gitops-observability-dev
-        # region / vpcId are left unset — the controller discovers both from
-        # IMDS on the node it runs on.
+        # region and vpcId are left unset — the controller discovers both by
+        # calling IMDS on startup. That only works because the managed node
+        # group runs with IMDS hop limit 2 (terraform/modules/eks); the EKS
+        # default of 1 makes the call time out and the controller crash-loop.
         replicaCount: 1
         serviceAccount:
           create: true

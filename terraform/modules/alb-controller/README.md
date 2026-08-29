@@ -45,6 +45,16 @@ see `argocd/apps/aws-load-balancer-controller.yaml`. Added in **Stage 8
 (`eks-gitops-observability-dev`), same as the other in-repo Application
 manifests.
 
+## Depends on: node IMDS hop limit
+
+The chart values leave `region` and `vpcId` unset, so the controller
+discovers both by calling IMDS on startup. That call only succeeds because
+the managed node group runs with IMDS hop limit 2 (see
+`terraform/modules/eks` → "Node launch template"). On the EKS default of 1
+the controller crash-loops with `failed to get VPC ID ... context deadline
+exceeded`. The alternative — hardcoding `vpcId` in the Application — was
+rejected because it changes on every rebuild.
+
 ## Version note
 
 The controller policy matches chart **3.5.0 / appVersion v3.5.0**, pinned in

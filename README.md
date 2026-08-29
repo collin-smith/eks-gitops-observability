@@ -2,11 +2,11 @@
 
 A portfolio project demonstrating a production-shaped deployment pipeline:
 
-**Docker → EKS (Terraform) → Helm → ArgoCD (GitOps) → Prometheus → Grafana**
+**Docker → EKS (Terraform) → Helm → ArgoCD (GitOps) → Prometheus → Grafana → Autoscaling → Ingress**
 
-Built to close specific hands-on gaps (Docker, Helm, ArgoCD, Prometheus, Grafana)
-against existing CKAD certification and deep Terraform/EKS experience — in the
-order those gaps actually appear in a real deployment pipeline.
+Built to close specific hands-on gaps (Docker, Helm, ArgoCD, Prometheus, Grafana,
+Karpenter, ingress) against existing CKAD certification and deep Terraform/EKS
+experience — in the order those gaps actually appear in a real deployment pipeline.
 
 ## Stages
 
@@ -22,6 +22,8 @@ Articles and diagrams live outside this repo, in the workspace-level
 | 4 | ArgoCD     | `04-argocd.md`                | `04-argocd.drawio`               |
 | 5 | Prometheus | `05-prometheus.md`            | `05-prometheus.drawio`           |
 | 6 | Grafana    | `06-grafana.md`               | `06-grafana.drawio`              |
+| 7 | Autoscaling| `07-autoscaling.md`          | `07-autoscaling.drawio`          |
+| 8 | Ingress    | `08-ingress.md`               | `08-ingress.drawio`              |
 
 Paths are relative to `outputs/eks-gitops-observability/articles/`. Articles
 publish to collin-smith.medium.com. Diagrams are cumulative — each stage's
@@ -41,7 +43,7 @@ kubernetes/
 ## Layout
 
 ```
-terraform/modules/{vpc,eks,ecr}/   Terraform modules
+terraform/modules/{vpc,eks,ecr,karpenter,alb-controller}/   Terraform modules
 terraform/envs/dev/                Terraform environment (dev)
 app/                                Demo app (Python/FastAPI): /health, /metrics, /docs
 helm/demo-app/                     Helm chart for the demo app

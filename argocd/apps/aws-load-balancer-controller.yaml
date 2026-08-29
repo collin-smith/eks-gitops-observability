@@ -1,0 +1,55 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: aws-load-balancer-controller
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://aws.github.io/eks-charts
+    chart: aws-load-balancer-controller
+    # Pin deliberately. The chart version scheme changed at v3.0.0 —
+    # controller v2.x shipped as chart 1.x, v3.x as a matching chart 3.x.
+    # Before bumping, check that terraform/modules/alb-controller's policy
+    # still matches docs/install/iam_policy.json at this release's git tag.
+    targetRevision: "3.5.0"
+    helm:
+      values: |
+        clusterName: eks-gitops-observability-dev
+        # region / vpcId are left unset — the controller discovers both from
+        # IMDS on the node it runs on.
+        replicaCount: 1
+        serviceAccount:
+          create: true
+          name: aws-load-balancer-controller
+          annotations:
+            eks.amazonaws.com/role-arn: arn:aws:iam::<account-id>:role/eks-gitops-observability-dev-aws-load-balancer-controller
+        # Creates the `alb` IngressClass + its IngressClassParams so the
+        # demo-app Ingress can reference `ingressClassName: alb`. Both are
+        # chart defaults; pinned here to make the dependency explicit.
+        ingressClass: alb
+        createIngressClassResource: true
+        ingressClassParams:
+          name: alb
+        # This project only wants Ingress -> ALB. Leave LoadBalancer-type
+        # Services to the in-tree cloud provider rather than having the
+        # controller's mutating webhook rewrite every one of them to an NLB.
+        enableServiceMutatorWebhook: false
+        resources:
+          requests:
+            cpu: 50m
+            memory: 96Mi
+          limits:
+            cpu: 200m
+            memory: 192Mi
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: kube-system
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      # The chart ships CRDs (TargetGroupBinding, IngressClassParams) that
+      # exceed kubectl's client-side apply annotation limit.
+      - ServerSideApply=true

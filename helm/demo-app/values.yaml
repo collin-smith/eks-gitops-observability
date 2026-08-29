@@ -35,6 +35,28 @@ serviceMonitor:
   enabled: false
   interval: 15s
 
+# Stage 8. Off by default -- the `alb` IngressClass and the admission
+# webhook that validates this resource only exist once the AWS Load Balancer
+# Controller is running. The Application turns this on via a helm parameter.
+ingress:
+  enabled: false
+  className: alb
+  # internet-facing puts the ALB in the public subnets (tagged
+  # kubernetes.io/role/elb=1); "internal" would use the private ones.
+  scheme: internet-facing
+  # "ip" registers pod IPs directly as targets (VPC CNI) instead of routing
+  # through a NodePort -- one less hop, and targets track pods not nodes.
+  targetType: ip
+  # Host rule is optional. Left empty, the ALB answers on its own DNS name
+  # for any host -- which is all this demo needs (no domain, no ACM cert).
+  host: ""
+  path: /
+  pathType: Prefix
+  # Defaults to probes.path (/health) if left empty.
+  healthcheckPath: ""
+  # Merged in last, so a caller can add or override any annotation.
+  annotations: {}
+
 # Stage 7. Off by default -- the custom metric (metricName) only resolves
 # once prometheus-adapter is running. The Application turns this on via a
 # helm parameter, and also adds ignoreDifferences on /spec/replicas so

@@ -32,3 +32,8 @@ output "karpenter_node_role_name" {
   description = "The EC2NodeClass 'role' field in argocd/apps/karpenter-nodepool.yaml"
   value       = module.karpenter.node_iam_role_name
 }
+
+# Stage 8 — fed into argocd/apps/aws-load-balancer-controller.yaml's Helm values.
+output "alb_controller_role_arn" {
+  value = module.alb_controller.controller_role_arn
+}

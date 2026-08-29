@@ -44,3 +44,15 @@ module "karpenter" {
   node_iam_role_name        = module.eks.node_group_role_name
   cluster_security_group_id = module.eks.cluster_security_group_id
 }
+
+# Stage 8: AWS Load Balancer Controller. Just the IRSA role + policy — the
+# controller and the `alb` IngressClass come from ArgoCD
+# (argocd/apps/aws-load-balancer-controller.yaml). Internet-facing ALBs land
+# in the public subnets, discovered via their kubernetes.io/role/elb tag.
+module "alb_controller" {
+  source = "../../modules/alb-controller"
+
+  cluster_name      = var.cluster_name
+  oidc_provider_arn = module.eks.oidc_provider_arn
+  oidc_provider_url = module.eks.oidc_provider_url
+}

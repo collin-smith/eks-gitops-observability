@@ -21,6 +21,8 @@ spec:
           value: "true"
         - name: autoscaling.enabled
           value: "true"
+        - name: ingress.enabled
+          value: "true"
   destination:
     server: https://kubernetes.default.svc
     namespace: default
@@ -41,3 +43,13 @@ spec:
       selfHeal: true
     syncOptions:
       - CreateNamespace=true
+    # Stage 8: the Ingress is rejected by the AWS Load Balancer Controller's
+    # admission webhook until that controller's pod is up. These are
+    # separate Applications with no ordering between them, so on a cold
+    # bring-up the first demo-app sync can land first — retry instead of
+    # leaving the Application Degraded.
+    retry:
+      limit: 5
+      backoff:
+        duration: 15s
+        maxDuration: 2m
